@@ -49,11 +49,33 @@ def get_fans(request):
         form=forms.UserForm(request.POST.copy())
         if form.is_valid():
             username=form.cleaned_data['username']
-            cur=1
-            while cur<3:
-                fans=client.friendships__followers(screen_name=username,count=200,cursor=cur)
+            #获取用户粉丝
+            next_cursor=1
+            while next_cursor>0:
+                fans=client.friendships__followers(screen_name=username,count=200,cursor=next_cursor)
+                next_cursor=fans.next_cursor
+                print next_cursor
                 for fan in fans.users:
                     userinfo=UserInfo(uid=fan.id,username=fan.screen_name,province=fan.province,city=fan.province,location=fan.location,gender=fan.gender,verified=fan.verified)
                     userinfo.save()
-                cur=cur+1
+            #获取优质粉丝
+            '''user_info=client.users__show(screen_name=username)
+            user_id=user_info.id
+            active_fans=client.friendships__followers__active(uid=user_id,count=200)
+            for active_fan in active_fans.users:
+                userinfo=UserInfo(uid=active_fan.id,username=active_fan.screen_name,province=active_fan.province,city=active_fan.province,location=active_fan.location,gender=active_fan.gender,verified=active_fan.verified)
+                userinfo.save()'''           
     return render_to_response("weibo/operation.html",{'userForm':forms.UserForm()},context_instance=RequestContext(request))
+
+'''发布评论@用户'''
+def comments(request):
+    access_token=request.session['access_token']
+    expires_in=request.session['expires_in']
+    client = APIClient(app_key=APP_KEY, app_secret=APP_SECRET, redirect_uri=CALLBACK_URL)
+    client.set_access_token(access_token, expires_in)
+    #获取用户发布的微博id
+    weiboids=client.statuses__user_timeline__ids(screen_name='爱淘的小可')
+    weiboid_list=weiboids.statuses
+    client.post.comments__create(comment='@机动蜗牛',id=weiboid_list[0])
+    return render_to_response("weibo/operation.html",{'userForm':forms.UserForm()},context_instance=RequestContext(request))
+    

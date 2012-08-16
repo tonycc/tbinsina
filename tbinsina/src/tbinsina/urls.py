@@ -18,4 +18,5 @@ urlpatterns = patterns('',
     url(r'^login/$','tbinsina.weibo.views.login',name='login'),
     url(r'^login_check/$','tbinsina.weibo.views.login_check',name="logincheck"),
     url(r'^getfans/$','tbinsina.weibo.views.get_fans',name="getfans"),
+    url(r'^comments/$','tbinsina.weibo.views.comments',name="getfans"),
 )
