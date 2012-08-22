@@ -15,6 +15,7 @@ class UserInfo(models.Model):
     location=models.CharField(max_length=60,blank=True)
     gender=models.CharField(max_length=5,blank=True)
     verified=models.CharField(max_length=5,blank=True)
+    weibo=models.CharField(max_length=50,blank=True)
     
     def __unicode__(self):       
         return self.username

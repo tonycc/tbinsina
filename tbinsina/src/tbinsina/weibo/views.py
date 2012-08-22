@@ -21,8 +21,6 @@ def index(request):
     return render_to_response("weibo/login.html",{},context_instance=RequestContext(request))
 
 def login(request):
-
-    
     client = APIClient(app_key=APP_KEY, app_secret=APP_SECRET, redirect_uri=CALLBACK_URL)
     url = client.get_authorize_url()
     return HttpResponseRedirect(url)
@@ -74,8 +72,23 @@ def comments(request):
     client = APIClient(app_key=APP_KEY, app_secret=APP_SECRET, redirect_uri=CALLBACK_URL)
     client.set_access_token(access_token, expires_in)
     #获取用户发布的微博id
-    weiboids=client.statuses__user_timeline__ids(screen_name='爱淘的小可')
+    weiboids=client.statuses__user_timeline__ids(access_token=access_token,screen_name='爱淘的小可')
     weiboid_list=weiboids.statuses
-    client.post.comments__create(comment='@机动蜗牛',id=weiboid_list[0])
+    #微博内容
+    content=' 超级简单的减肥方法，早晚两次迅速见效。买减肥霜还送保鲜膜，超级划算的。千万不要错过。http://t.cn/zWYXkam'
+    username=''
+    #读取用户
+    userInfos=UserInfo.objects.filter(gender='f').order_by('uid').values('username')
+    for userinfo in userInfos:
+        if len(username)<80:
+            #记录该用户是否已经@过
+            UserInfo.objects.filter(username=userinfo['username']).update(weibo=weiboid_list[0]) 
+            username=username+'@'+userinfo['username']+' '
+        else:
+            print username+content
+            #client.post.comments__create(comment=username+content,id=weiboid_list[0])
+            username='@'+userinfo['username']+' '       
+        
+
     return render_to_response("weibo/operation.html",{'userForm':forms.UserForm()},context_instance=RequestContext(request))
     
