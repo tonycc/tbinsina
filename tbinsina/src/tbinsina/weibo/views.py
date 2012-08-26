@@ -4,6 +4,8 @@ Created on 2012-8-12
 
 @author: Tony
 '''
+import time
+
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.http import HttpResponseRedirect
@@ -77,17 +79,26 @@ def comments(request):
     #微博内容
     content=' 超级简单的减肥方法，早晚两次迅速见效。买减肥霜还送保鲜膜，超级划算的。千万不要错过。http://t.cn/zWYXkam'
     username=''
+    i=0
     #读取用户
-    userInfos=UserInfo.objects.filter(gender='f').order_by('uid').values('username')
+    userInfos=UserInfo.objects.filter(gender='f').order_by('-uid').values('username')
     for userinfo in userInfos:
         if len(username)<80:
             #记录该用户是否已经@过
             UserInfo.objects.filter(username=userinfo['username']).update(weibo=weiboid_list[0]) 
             username=username+'@'+userinfo['username']+' '
         else:
-            print username+content
-            #client.post.comments__create(comment=username+content,id=weiboid_list[0])
-            username='@'+userinfo['username']+' '       
+            '''每小时发50个评论'''
+            if i<50:     
+                print str(i)+' ' +username+content
+                client.post.comments__create(comment=username+content,id=weiboid_list[0])
+                time.sleep(12)
+                i=i+1
+                username='@'+userinfo['username']+' ' 
+            else:
+                print "wait 3600 sedonds"
+                time.sleep(3600)     
+                i=0
         
 
     return render_to_response("weibo/operation.html",{'userForm':forms.UserForm()},context_instance=RequestContext(request))
